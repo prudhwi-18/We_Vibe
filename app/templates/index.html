@@ -44,14 +44,45 @@
       max-width: 1440px;
       flex-wrap: wrap;
     }
-    .navbar .nav-inner > .search-bar {
+    .navbar .nav-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
       flex: 1 1 320px;
       min-width: 220px;
       max-width: 100%;
     }
-    .navbar .nav-inner > .user-info {
-      flex: 0 1 auto;
-      min-width: 120px;
+    .navbar .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+    .navbar .search-bar input {
+      flex: 1 1 180px;
+      min-width: 150px;
+      padding: 0.5rem 0.9rem;
+      border-radius: 999px;
+      border: none;
+      outline: none;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+    .navbar .search-bar input::placeholder {
+      color: #ccc;
+    }
+    .navbar .logout-btn {
+      white-space: nowrap;
+      padding: 0.4rem 1rem;
+      min-width: 96px;
+    }
+    .navbar .now-playing {
+      color: #00ffe0;
+      font-weight: 600;
+      line-height: 1.4;
+      max-width: 100%;
+      word-break: break-word;
     }
     .navbar:hover {
       background: rgba(20, 25, 45, 0.96);
@@ -833,17 +864,15 @@
       WeVibe
     </h1>
     <div class="nav-inner">
-      <span id="nowPlaying" style="color:#00ffe0; font-weight:bold; min-width:0; word-break:break-word;"></span>
-      <div class="search-bar">
-        <input type="text" placeholder="Search songs..." id="searchInput">
-        <form method="POST" action="{% url 'logout' %}" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" class="logout-btn">Logout</button>
-        </form>
-      </div>
-      <div class="user-info" style="display: flex; align-items: center; gap: 0.7rem;">
-        <img src="{% if user.profile.profile_pic %}{{ user.profile.profile_pic.url }}{% else %}/static/default-profile.png{% endif %}" alt="Profile" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #00ffe0;">
-        <span style="color:#00ffe0; font-weight:500;">{{ user.username }}</span>
+      <div class="nav-section">
+        <div class="search-bar">
+          <input type="text" placeholder="Search songs..." id="searchInput">
+          <form method="POST" action="{% url 'logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">Logout</button>
+          </form>
+        </div>
+        <div class="now-playing" id="nowPlaying"></div>
       </div>
     </div>
   </div>
