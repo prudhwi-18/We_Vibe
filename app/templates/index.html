@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WeVibe Music Player</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #181f3a 0%, #1e2a47 50%, #2b5876 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: background 0.3s;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2.5rem;
+      background: rgba(15, 18, 34, 0.82);
+      border-radius: 22px;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      margin: 1.5rem 2rem 2rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border: 1.5px solid rgba(0,255,224,0.13);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .navbar:hover {
+      background: rgba(20, 25, 45, 0.96);
+      box-shadow: 0 12px 36px 0 rgba(0,255,224,0.10), 0 2px 8px rgba(0,0,0,0.22);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+    .navbar h1 {
+      font-size: 1.7rem;
+      color: #00ffe0;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .navbar .logo {
+      width: 38px;
+      height: 38px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.3rem;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .search-bar input {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      border: none;
+      outline: none;
+    }
+    .theme-toggle {
+      background: #333;
+      color: #fff;
+      padding: 0.3rem 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .main-content {
+      display: flex;
+      flex: 1;
+    }
+    .song-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      padding: 1.5rem;
+      width: 70%;
+    }
+    .song-card {
+      background: rgba(30, 30, 30, 0.35);
+      padding: 1rem;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 320px;
+      min-width: 0;
+      min-height: 0;
+      justify-content: flex-start;
+      border: 1.5px solid rgba(0,255,224,0.18);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .song-card:hover {
+      transform: translateY(-8px) scale(1.03);
+      background: rgba(0, 255, 224, 0.10);
+      box-shadow: 0 12px 32px 0 rgba(0,255,224,0.15), 0 2px 8px rgba(0,0,0,0.18);
+      border-color: #00ffe0;
+    }
+    .song-card img {
+      width: 100%;
+      max-width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      background: #222;
+      display: block;
+    }
+    .song-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .song-title {
+      font-size: 1rem;
+    }
+    .song-fav {
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #888;
+    }
+    .song-fav.fav {
+      color: #ff3366;
+    }
+    .player-panel {
+      width: 30%;
+      padding: 2rem;
+      background: rgba(30, 30, 30, 0.35);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border-left: 1px solid #333;
+      border: 1.5px solid rgba(0,255,224,0.18);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      margin: 1.5rem 1.5rem 1.5rem 0;
+    }
+    .player-panel img {
+      width: 100%;
+      max-width: 240px;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+    }
+    .player-title {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    .player-artist {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 1rem;
+    }
+    .equalizer {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      margin-top: 1.5rem;
+      height: 60px;
+      justify-content: center;
+    }
+    .equalizer div {
+      width: 10px;
+      height: 16px;
+      background: linear-gradient(180deg, #00ffe0 0%, #0077ff 100%);
+      border-radius: 6px;
+      animation: beat 1.1s infinite cubic-bezier(.68,-0.55,.27,1.55);
+      animation-play-state: paused;
+      transform-origin: bottom;
+      box-shadow: 0 0 16px #00ffe088, 0 0 8px #0077ff88;
+      opacity: 0.85;
+    }
+    .equalizer div:nth-child(1) { animation-delay: 0s; }
+    .equalizer div:nth-child(2) { animation-delay: 0.15s; }
+    .equalizer div:nth-child(3) { animation-delay: 0.3s; }
+    .equalizer div:nth-child(4) { animation-delay: 0.18s; }
+    .equalizer div:nth-child(5) { animation-delay: 0.23s; }
+    @keyframes beat {
+      0%, 100% { transform: scaleY(1); opacity: 0.7; }
+      20% { transform: scaleY(2.8); opacity: 1; }
+      40% { transform: scaleY(1.4); opacity: 0.8; }
+      60% { transform: scaleY(2.2); opacity: 1; }
+      80% { transform: scaleY(1.1); opacity: 0.8; }
+    }
+    .dark-mode {
+      background: #ffffff;
+      color: #000;
+    }
+    .logout-btn {
+      margin-left: 1rem;
+      background: #ff3366;
+      color: #fff;
+      padding: 0.3rem 1rem;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+    .logout-btn:hover {
+      background: #ff0033;
+      color: #fff;
+    }
+    .song-card.playing {
+      border: 2px solid #00ffe0;
+      box-shadow: 0 0 16px #00ffe088;
+    }
+    .player-controls button {
+      background: #23272f;
+      color: #00ffe0;
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-size: 1.5rem;
+      margin: 0 0.2rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px #00ffe033;
+      transition: background 0.2s, color 0.2s, transform 0.1s;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .player-controls button:active {
+      transform: scale(0.93);
+    }
+    .player-controls button.active,
+    .player-controls button:focus,
+    .player-controls button:hover {
+      background: #00ffe0;
+      color: #181818;
+    }
+    .player-controls button#playPauseBtn {
+      background: #00ffe0;
+      color: #181818;
+      font-size: 2rem;
+      width: 54px;
+      height: 54px;
+      margin: 0 0.4rem;
+    }
+    .player-controls button#shuffleBtn.active,
+    .player-controls button#repeatBtn.active {
+      background: #0077ff;
+      color: #fff;
+    }
+    .edit-btn {
+      background: #23272f;
+      color: #00ffe0;
+      border-radius: 8px;
+      padding: 0.3rem 0.8rem;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: background 0.2s, color 0.2s;
+    }
+    .edit-btn:hover {
+      background: #00ffe0;
+      color: #181818;
+    }
+    audio {
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+    @media (max-width: 800px) {
+      .main-content {
+        flex-direction: column;
+      }
+      .song-grid, .player-panel {
+        width: 100%;
+        padding: 1rem;
+      }
+      .player-panel {
+        border-left: none;
+        border-top: 1px solid #333;
+      }
+    }
+    .symbols-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .symbol {
+      position: absolute;
+      opacity: 0.7;
+      filter: blur(0.5px);
+      animation-timing-function: ease-in-out;
+    }
+    .symbol1 { width: 80px; height: 80px; top: 8vh; left: 8vw; animation: floatSymbol1 12s infinite alternate; }
+    .symbol2 { width: 70px; height: 70px; top: 60vh; left: 12vw; animation: floatSymbol2 16s infinite alternate; }
+    .symbol3 { width: 60px; height: 60px; top: 30vh; right: 10vw; animation: floatSymbol3 18s infinite alternate; }
+    .symbol4 { width: 90px; height: 90px; bottom: 12vh; left: 40vw; animation: floatSymbol4 14s infinite alternate; }
+    .symbol5 { width: 70px; height: 70px; bottom: 8vh; right: 18vw; animation: floatSymbol5 20s infinite alternate; }
+    .symbol6 { width: 50px; height: 50px; top: 18vh; left: 70vw; animation: floatSymbol6 17s infinite alternate; opacity: 0.5;}
+    .symbol7 { width: 40px; height: 40px; top: 75vh; left: 80vw; animation: floatSymbol7 19s infinite alternate; opacity: 0.6;}
+    .symbol8 { width: 36px; height: 36px; top: 50vh; left: 55vw; animation: floatSymbol8 13s infinite alternate; opacity: 0.5;}
+    .symbol9 { width: 60px; height: 60px; top: 22vh; right: 25vw; animation: floatSymbol9 21s infinite alternate; opacity: 0.4;}
+    .symbol10 { width: 38px; height: 38px; bottom: 18vh; right: 8vw; animation: floatSymbol10 15s infinite alternate; opacity: 0.5;}
+    @keyframes floatSymbol1 {
+      0% { transform: translateY(0) scale(1) rotate(0deg);}
+      50% { transform: translateY(-40px) scale(1.12) rotate(12deg);}
+      100% { transform: translateY(0) scale(1) rotate(0deg);}
+    }
+    @keyframes floatSymbol2 {
+      0% { transform: translateY(0) scale(1) rotate(0deg);}
+      50% { transform: translateY(-60px) scale(1.08) rotate(-8deg);}
+      100% { transform: translateY(0) scale(1) rotate(0deg);}
+    }
+    @keyframes floatSymbol3 {
+      0% { transform: translateY(0) scale(1) rotate(0deg);}
+      50% { transform: translateY(50px) scale(1.15) rotate(10deg);}
+      100% { transform: translateY(0) scale(1) rotate(0deg);}
+    }
+    @keyframes floatSymbol4 {
+      0% { transform: translateY(0) scale(1) rotate(0deg);}
+      50% { transform: translateY(-30px) scale(1.09) rotate(-14deg);}
+      100% { transform: translateY(0) scale(1) rotate(0deg);}
+    }
+    @keyframes floatSymbol5 {
+      0% { transform: translateY(0) scale(1) rotate(0deg);}
+      50% { transform: translateY(40px) scale(1.13) rotate(18deg);}
+      100% { transform: translateY(0) scale(1) rotate(0deg);}
+    }
+    @keyframes floatSymbol6 {
+      0% { transform: translateY(0) scale(1) rotate(0deg);}
+      50% { transform: translateY(-25px) scale(1.08) rotate(20deg);}
+      100% { transform: translateY(0) scale(1) rotate(0deg);}
+    }
+    @keyframes floatSymbol7 {
+      0% { transform: translateY(0) scale(1) rotate(0deg);}
+      50% { transform: translateY(30px) scale(1.12) rotate(-18deg);}
+      100% { transform: translateY(0) scale(1) rotate(0deg);}
+    }
+    @keyframes floatSymbol8 {
+      0% { transform: translateY(0) scale(1) rotate(0deg);}
+      50% { transform: translateY(-18px) scale(1.09) rotate(8deg);}
+      100% { transform: translateY(0) scale(1) rotate(0deg);}
+    }
+    @keyframes floatSymbol9 {
+      0% { transform: translateY(0) scale(1) rotate(0deg);}
+      50% { transform: translateY(22px) scale(1.05) rotate(-12deg);}
+      100% { transform: translateY(0) scale(1) rotate(0deg);}
+    }
+    @keyframes floatSymbol10 {
+      0% { transform: translateY(0) scale(1) rotate(0deg);}
+      50% { transform: translateY(-16px) scale(1.11) rotate(14deg);}
+      100% { transform: translateY(0) scale(1) rotate(0deg);}
+    }
+    .navbar, .main-content, #profileModal {
+      position: relative;
+      z-index: 2;
+    }
+    .custom-player {
+      width: 100%;
+      max-width: 340px;
+      margin: 0 auto;
+      background: rgba(30, 30, 30, 0.38);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1.5px solid rgba(0,255,224,0.18);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 2rem 1.5rem 1.5rem 1.5rem;
+    }
+    .custom-player img {
+      width: 100%;
+      max-width: 180px;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 12px #00ffe033;
+    }
+    .player-controls {
+      margin: 1rem 0;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .progress-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin: 0.7rem 0 0.2rem 0;
+    }
+    #progressBar {
+      flex: 1;
+      accent-color: #00ffe0;
+      height: 4px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #00ffe0 0%, #0077ff 100%);
+      outline: none;
+      transition: background 0.2s;
+    }
+    #progressBar::-webkit-slider-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #00ffe0;
+      border: 2px solid #0077ff;
+      cursor: pointer;
+      box-shadow: 0 2px 8px #00ffe033;
+    }
+    #progressBar::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #00ffe0;
+      border: 2px solid #0077ff;
+      cursor: pointer;
+    }
+    #progressBar::-ms-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #00ffe0;
+      border: 2px solid #0077ff;
+      cursor: pointer;
+    }
+    .volume-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.7rem;
+    }
+    #volumeBar {
+      flex: 1;
+      accent-color: #00ffe0;
+      height: 4px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #00ffe0 0%, #0077ff 100%);
+      outline: none;
+    }
+    #currentTime, #duration {
+      font-size: 0.95rem;
+      color: #00ffe0;
+      letter-spacing: 1px;
+      min-width: 40px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="symbols-bg">
+  <svg class="symbol symbol1" viewBox="0 0 32 32" fill="none">
+    <circle cx="16" cy="16" r="16" fill="#00ffe033"/>
+    <path d="M22 7v12.5a3.5 3.5 0 1 1-2-3.15V11h-6v8.5a3.5 3.5 0 1 1-2-3.15V9a2 2 0 0 1 2-2h8z" fill="#00ffe0"/>
+  </svg>
+  <svg class="symbol symbol2" viewBox="0 0 32 32" fill="none">
+    <circle cx="16" cy="16" r="16" fill="#0077ff22"/>
+    <path d="M8 20v-2a8 8 0 0 1 16 0v2" stroke="#00ffe0" stroke-width="2" fill="none"/>
+    <rect x="6" y="20" width="4" height="6" rx="2" fill="#00ffe0"/>
+    <rect x="22" y="20" width="4" height="6" rx="2" fill="#00ffe0"/>
+  </svg>
+  <svg class="symbol symbol3" viewBox="0 0 32 32" fill="none">
+    <circle cx="16" cy="16" r="16" fill="#00ffe022"/>
+    <polygon points="13,10 24,16 13,22" fill="#00ffe0"/>
+  </svg>
+  <svg class="symbol symbol4" viewBox="0 0 32 32" fill="none">
+    <circle cx="16" cy="16" r="16" fill="#ff336622"/>
+    <path d="M16 25s-7-4.35-7-9.5A4.5 4.5 0 0 1 16 13a4.5 4.5 0 0 1 7 2.5C23 20.65 16 25 16 25z" fill="#ff3366"/>
+  </svg>
+  <svg class="symbol symbol5" viewBox="0 0 32 32" fill="none">
+    <circle cx="16" cy="16" r="16" fill="#00ffe033"/>
+    <path d="M12 8v10.5a2.5 2.5 0 1 0 1.5-2.3V10h5v8.5a2.5 2.5 0 1 0 1.5-2.3V8h-8z" fill="#00ffe0"/>
+  </svg>
+  <svg class="symbol symbol6" viewBox="0 0 32 32" fill="none">
+    <polygon points="16,4 20,14 31,14 22,20 25,30 16,24 7,30 10,20 1,14 12,14" fill="#fff17688"/>
+  </svg>
+  <svg class="symbol symbol7" viewBox="0 0 32 32" fill="none">
+    <path d="M16 4 L18 14 L28 16 L18 18 L16 28 L14 18 L4 16 L14 14 Z" fill="#00ffe088"/>
+  </svg>
+  <svg class="symbol symbol8" viewBox="0 0 24 24" fill="none">
+    <ellipse cx="12" cy="12" rx="12" ry="12" fill="#00bcd488"/>
+    <path d="M17 6v8.5a2.5 2.5 0 1 1-1.5-2.3V8h-4v6.5a2.5 2.5 0 1 1-1.5-2.3V6a1.5 1.5 0 0 1 1.5-1.5h6z" fill="#00ffe0"/>
+  </svg>
+  <svg class="symbol symbol9" viewBox="0 0 32 32" fill="none">
+    <circle cx="16" cy="16" r="16" fill="#0077ff33"/>
+    <polygon points="13,10 24,16 13,22" fill="#fff"/>
+  </svg>
+  <svg class="symbol symbol10" viewBox="0 0 24 24" fill="none">
+    <ellipse cx="12" cy="12" rx="12" ry="12" fill="#ff336644"/>
+    <path d="M12 19s-5-3.1-5-6.8A3.2 3.2 0 0 1 12 10a3.2 3.2 0 0 1 5 2.2C17 15.9 12 19 12 19z" fill="#ff3366"/>
+  </svg>
+</div>
+  <div class="navbar">
+    <h1>
+      <span class="logo">
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="16" fill="#00ffe0" fill-opacity="0.13"/>
+          <path d="M22 7v12.5a3.5 3.5 0 1 1-2-3.15V11h-6v8.5a3.5 3.5 0 1 1-2-3.15V9a2 2 0 0 1 2-2h8z" fill="#00ffe0"/>
+        </svg>
+      </span>
+      WeVibe
+    </h1>
+    <span id="nowPlaying" style="color:#00ffe0; font-weight:bold; margin-left:2rem;"></span>
+    <div style="display: flex; align-items: center; gap: 1.5rem;">
+      <div class="search-bar">
+        <input type="text" placeholder="Search songs..." id="searchInput">
+        <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+      </div>
+      <div class="user-info" style="display: flex; align-items: center; gap: 0.7rem;">
+        <span style="color:#00ffe0; font-weight:500;"></span>
+        <a href="{% url 'playlist' %}" class="edit-btn" style="background:#23272f; color:#00ffe0; border-radius:8px; padding:0.3rem 0.8rem; text-decoration:none; font-size:0.95rem;">Playlist</a>
+      </div>
+      <div class="user-info" style="display: flex; align-items: center; gap: 0.7rem;">
+        <img src="{% if user.profile.profile_pic %}{{ user.profile.profile_pic.url }}{% else %}/static/default-profile.png{% endif %}" alt="Profile" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #00ffe0;">
+        <span style="color:#00ffe0; font-weight:500;">{{ user.username }}</span>
+        <a href="#" class="edit-btn" style="background:#23272f; color:#00ffe0; border-radius:8px; padding:0.3rem 0.8rem; text-decoration:none; font-size:0.95rem;">Edit</a>
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+    <div class="song-grid" id="songGrid">
+    </div>
+    <div class="player-panel">
+      <div class="custom-player">
+        <img id="playerCover" src="" alt="Cover"
+          onerror="this.onerror=null;this.src='https://img.icons8.com/ios-filled/200/cccccc/musical-notes.png';" />
+        <div class="player-title" id="playerTitle">Select a song</div>
+        <div class="player-artist" id="playerArtist">Artist</div>
+        <div class="player-controls">
+          <button id="shuffleBtn" title="Shuffle">&#128256;</button>
+          <button id="prevBtn" title="Previous">&#9198;</button>
+          <button id="playPauseBtn" title="Play/Pause">&#9654;</button>
+          <button id="nextBtn" title="Next">&#9197;</button>
+          <button id="repeatBtn" title="Repeat">&#128257;</button>
+        </div>
+        <div class="progress-container">
+          <span id="currentTime">0:00</span>
+          <input type="range" id="progressBar" value="0" min="0" max="100" step="1">
+          <span id="duration">0:00</span>
+        </div>
+        <div class="volume-container">
+          <span style="font-size:1.2rem;">🔊</span>
+          <input type="range" id="volumeBar" min="0" max="1" step="0.01" value="1">
+        </div>
+        <audio id="player" style="display:none;"></audio>
+        <div class="equalizer" id="equalizer">
+          <div></div><div></div><div></div><div></div><div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+<div id="profileModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000a; z-index:1000; align-items:center; justify-content:center;">
+  <form method="post" enctype="multipart/form-data" action="/profile/edit/" style="background:#23272f; color:#fff; padding:2rem 2.5rem; border-radius:16px; min-width:320px; max-width:90vw; box-shadow:0 8px 32px #000a; display:flex; flex-direction:column; gap:1rem; position:relative;">
+    {% csrf_token %}
+    <button type="button" onclick="closeProfileModal()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#fff; font-size:1.3rem; cursor:pointer;">&times;</button>
+    <h2 style="margin-bottom:0.5rem;">Edit Profile</h2>
+    <label>Profile Photo:
+      <input type="file" name="profile_pic" accept="image/*" style="margin-top:0.3rem;">
+    </label>
+    <label>Username:
+      <input type="text" name="username" value="{{ user.username }}" required style="margin-top:0.3rem; width:100%; padding:0.4rem; border-radius:6px; border:none;">
+    </label>
+    <label>Email:
+      <input type="email" name="email" value="{{ user.email }}" required style="margin-top:0.3rem; width:100%; padding:0.4rem; border-radius:6px; border:none;">
+    </label>
+    <label>About:
+      <textarea name="about" rows="3" style="margin-top:0.3rem; width:100%; padding:0.4rem; border-radius:6px; border:none;">{{ user.profile.about }}</textarea>
+    </label>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+      <button type="submit" class="edit-btn" style="padding:0.5rem 1.2rem;">Save</button>
+      <button type="button" onclick="deleteProfile()" style="background:#ff3366; color:#fff; border:none; border-radius:8px; padding:0.5rem 1.2rem; cursor:pointer;">Delete Profile</button>
+    </div>
+  </form>
+</div>
+<input type="hidden" id="csrf_token" value="{% csrf_token %}">
+  <script>
+    const songs = [
+   
+  {
+    title: "Aaya Sher",
+    artist: "Unknown",
+    cover: "/media/covers/nani.jpg",
+    src: "/media/audio/aayasher.mp3"
+  },
+ 
+  {
+    title: "Chikiri Chikiri",
+    artist: "Unknown",
+    cover: "/media/covers/peddi.jpg",
+    src: "/media/audio/chikiri.mp3"
+  },
+  
+  {
+    title: "Bad Boy",
+    artist: "Unknown",
+    cover: "/media/covers/saaho.jpg",
+    src: "/media/audio/badboy.mp3"
+  },
+  
+  
+    ];
+    const grid = document.getElementById('songGrid');
+    const player = document.getElementById('player');
+    const playerTitle = document.getElementById('playerTitle');
+    const playerArtist = document.getElementById('playerArtist');
+    const playerCover = document.getElementById('playerCover');
+    const equalizerBars = document.querySelectorAll('.equalizer div');
+    const searchInput = document.getElementById('searchInput');
+    const nowPlaying = document.getElementById('nowPlaying');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const progressBar = document.getElementById('progressBar');
+const currentTimeEl = document.getElementById('currentTime');
+const durationEl = document.getElementById('duration');
+const volumeBar = document.getElementById('volumeBar');
+    let currentIndex = 0;
+    let isShuffle = false;
+    let isRepeat = false;
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+    function formatTime(sec) {
+      sec = Math.floor(sec);
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+    function loadSongs(songList) {
+      grid.innerHTML = '';
+      songList.forEach((song, i) => {
+        const card = document.createElement('div');
+        card.className = 'song-card';
+        card.innerHTML = `
+          <img src="${song.cover}" alt="${song.title}" onerror="this.onerror=null;this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTef_b84s52sJo3fBibb7-VGenkRTabstp7Mg&s';" />
+          <div class="song-info">
+            <div class="song-title">${song.title}</div>
+            <div class="song-fav" onclick="toggleFav(this)">&#10084;</div>
+          </div>
+        `;
+        card.addEventListener('click', () => playSong(song, i));
+        grid.appendChild(card);
+      });
+    }
+    function playSong(song, idx = null) {
+      player.src = song.src;
+      playerTitle.textContent = song.title;
+      playerArtist.textContent = song.artist;
+      playerCover.src = song.cover;
+      player.play();
+      if (idx !== null) currentIndex = idx;
+      document.querySelectorAll('.song-card').forEach(card => card.classList.remove('playing'));
+      Array.from(grid.children).forEach(card => {
+        if (card.querySelector('.song-title').textContent === song.title) {
+          card.classList.add('playing');
+        }
+      });
+      nowPlaying.textContent = `Now Playing: ${song.title} - ${song.artist}`;
+    }
+    function toggleFav(el) {
+      el.classList.toggle('fav');
+    }
+    player.addEventListener('timeupdate', () => {
+      timeDisplay.textContent = `${formatTime(player.currentTime)} / ${formatTime(player.duration || 0)}`;
+    });
+    player.addEventListener('loadedmetadata', () => {
+      timeDisplay.textContent = `0:00 / ${formatTime(player.duration || 0)}`;
+    });
+    player.addEventListener('ended', () => {
+      timeDisplay.textContent = `0:00 / ${formatTime(player.duration || 0)}`;
+      nowPlaying.textContent = '';
+    });
+    player.addEventListener('play', () => {
+      document.querySelectorAll('audio').forEach(a => {
+        if (a !== player) a.pause();
+      });
+      equalizerBars.forEach(bar => bar.style.animationPlayState = 'running');
+    });
+    player.addEventListener('pause', () => {
+      equalizerBars.forEach(bar => bar.style.animationPlayState = 'paused');
+    });
+    player.addEventListener('ended', () => {
+      equalizerBars.forEach(bar => bar.style.animationPlayState = 'paused');
+    });
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase();
+      const filtered = songs.filter(song =>
+        song.title.toLowerCase().includes(query) ||
+        song.artist.toLowerCase().includes(query)
+      );
+      loadSongs(filtered);
+    });
+    player.addEventListener('play', () => { playPauseBtn.innerHTML = '&#10073;&#10073;'; });
+    player.addEventListener('pause', () => { playPauseBtn.innerHTML = '&#9654;'; });
+    playPauseBtn.addEventListener('click', () => {
+      if (player.paused) player.play();
+      else player.pause();
+    });
+    prevBtn.addEventListener('click', () => {
+      if (isShuffle) {
+        playRandomSong();
+      } else {
+        currentIndex = (currentIndex - 1 + songs.length) % songs.length;
+        playSong(songs[currentIndex], currentIndex);
+      }
+    });
+    nextBtn.addEventListener('click', () => {
+      if (isShuffle) {
+        playRandomSong();
+      } else {
+        currentIndex = (currentIndex + 1) % songs.length;
+        playSong(songs[currentIndex], currentIndex);
+      }
+    });
+    shuffleBtn.addEventListener('click', () => {
+      isShuffle = !isShuffle;
+      shuffleBtn.classList.toggle('active', isShuffle);
+    });
+    repeatBtn.addEventListener('click', () => {
+      isRepeat = !isRepeat;
+      repeatBtn.classList.toggle('active', isRepeat);
+    });
+    function playRandomSong() {
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * songs.length);
+      } while (idx === currentIndex && songs.length > 1);
+      playSong(songs[idx], idx);
+    }
+    player.addEventListener('ended', () => {
+      if (isRepeat) {
+        player.currentTime = 0;
+        player.play();
+      } else if (isShuffle) {
+        playRandomSong();
+      } else {
+        currentIndex = (currentIndex + 1) % songs.length;
+        playSong(songs[currentIndex], currentIndex);
+      }
+    });
+    loadSongs(songs);
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('editProfileBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.getElementById('profileModal').style.display = 'flex';
+      });
+    });
+    function getCSRFToken() {
+      return document.querySelector('#csrf_token').value;
+    }
+    function closeProfileModal() {
+      document.getElementById('profileModal').style.display = 'none';
+    }
+    function deleteProfile() {
+      if(confirm('Are you sure you want to delete your profile? This cannot be undone.')) {
+        fetch('/profile/delete/', {
+          method:'POST',
+          headers:{'X-CSRFToken': getCSRFToken()}
+        }).then(() => window.location.href = '/logout/');
+      }
+    }
+    player.addEventListener('timeupdate', () => {
+      if (player.duration) {
+        progressBar.value = (player.currentTime / player.duration) * 100;
+        currentTimeEl.textContent = formatTime(player.currentTime);
+        durationEl.textContent = formatTime(player.duration);
+      }
+    });
+    progressBar.addEventListener('input', () => {
+      if (player.duration) {
+        player.currentTime = (progressBar.value / 100) * player.duration;
+      }
+    });
+    volumeBar.addEventListener('input', () => {
+      player.volume = volumeBar.value;
+    });
+    player.volume = volumeBar.value;
+  </script>
+</body>
+</html>
